@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Calendar as CalendarPrimitive } from "bits-ui";
-	import { cn, type WithoutChildrenOrChild } from "$lib/lib/utils.js";
+	// 💡 FINAL FIX APPLIED HERE: Changed "$lib/lib/utils.js" to "$lib/utils"
+	import { cn, type WithoutChildrenOrChild } from "$lib/utils";
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 
 	let {
