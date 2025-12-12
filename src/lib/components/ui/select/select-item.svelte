@@ -1,7 +1,8 @@
 <script lang="ts">
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import { Select as SelectPrimitive } from "bits-ui";
-	import { cn, type WithoutChild } from "$lib/lib/utils.js";
+	// 💡 FIX APPLIED HERE: Changed "$lib/lib/utils.js" to "$lib/utils"
+	import { cn, type WithoutChild } from "$lib/utils";
 
 	let {
 		ref = $bindable(null),
@@ -34,5 +35,5 @@
 		{:else}
 			{label || value}
 		{/if}
-	{/snippet}
+	</SelectPrimitive.Item>
 </SelectPrimitive.Item>
