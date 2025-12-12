@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { HTMLAttributes } from "svelte/elements";
-	// 💡 FIX APPLIED HERE: Changed "$lib/lib/utils.js" to "$lib/utils"
-	import { cn, type WithElementRef } from "$lib/utils"; 
+	import { cn, type WithElementRef } from "$lib/lib/utils.js";
 
 	let {
 		ref = $bindable(null),
@@ -13,8 +12,7 @@
 
 <div
 	bind:this={ref}
-	data-slot="card-title"
-	class={cn("font-semibold leading-none", className)}
+	class={cn("relative flex flex-col gap-4 md:flex-row", className)}
 	{...restProps}
 >
 	{@render children?.()}
