@@ -1,4 +1,7 @@
-import Root from "./select.svelte";
+// src/lib/components/ui/select/index.ts
+
+import Root from "./select.svelte"; // <-- MODIFIED IMPORT: Grabs 'Value' as 'SelectValue'
+import SelectValue from "./select.svelte";
 import Group from "./select-group.svelte";
 import Label from "./select-label.svelte";
 import Item from "./select-item.svelte";
@@ -11,27 +14,28 @@ import GroupHeading from "./select-group-heading.svelte";
 import Portal from "./select-portal.svelte";
 
 export {
-	Root,
-	Group,
-	Label,
-	Item,
-	Content,
-	Trigger,
-	Separator,
-	ScrollDownButton,
-	ScrollUpButton,
-	GroupHeading,
-	Portal,
-	//
-	Root as Select,
-	Group as SelectGroup,
-	Label as SelectLabel,
-	Item as SelectItem,
-	Content as SelectContent,
-	Trigger as SelectTrigger,
-	Separator as SelectSeparator,
-	ScrollDownButton as SelectScrollDownButton,
-	ScrollUpButton as SelectScrollUpButton,
-	GroupHeading as SelectGroupHeading,
-	Portal as SelectPortal,
+    Root,
+    Group,
+    Label,
+    Item,
+    Content,
+    Trigger,
+    Separator,
+    ScrollDownButton,
+    ScrollUpButton,
+    GroupHeading,
+    Portal,
+    SelectValue, // <-- ADDED: Export the SelectValue component
+    //
+    Root as Select,
+    Group as SelectGroup,
+    Label as SelectLabel,
+    Item as SelectItem,
+    Content as SelectContent,
+    Trigger as SelectTrigger,
+    Separator as SelectSeparator,
+    ScrollDownButton as SelectScrollDownButton,
+    ScrollUpButton as SelectScrollUpButton,
+    GroupHeading as SelectGroupHeading,
+    Portal as SelectPortal,
 };

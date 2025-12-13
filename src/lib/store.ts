@@ -1,47 +1,71 @@
-// $lib/store.ts
-import { writable } from 'svelte/store';
-import { browser } from '$app/environment'; // 💡 Import the browser environment check
-import type { Service, Appointment, SchedulerData } from './types';
+// src/lib/store.ts
+import { writable } from "svelte/store";
+import { browser } from "$app/environment";
+import type { Business, Booking } from "./types";
 
-const STORAGE_KEY = 'micro-saas-data';
+// --------------------
+// Helpers
+// --------------------
+function loadFromStorage<T>(key: string, fallback: T): T {
+  if (!browser) return fallback;
 
-// --- 1. Fix loadData() ---
-function loadData(): SchedulerData {
-  // 💡 Check if we are in the browser before accessing localStorage
-  if (browser) { 
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (e) {
-        console.error("Could not parse stored data", e);
-      }
-    }
+  const stored = localStorage.getItem(key);
+  if (!stored) return fallback;
+
+  try {
+    return JSON.parse(stored) as T;
+  } catch (err) {
+    console.error(`Failed to parse ${key}`, err);
+    return fallback;
   }
-  // Default structure if not in browser or no data found
-  return { services: [], appointments: [] };
 }
 
-const initialData = loadData();
+function saveToStorage<T>(key: string, value: T) {
+  if (!browser) return;
+  localStorage.setItem(key, JSON.stringify(value));
+}
 
-// Writable stores for reactivity
-export const services = writable<Service[]>(initialData.services);
-export const appointments = writable<Appointment[]>(initialData.appointments);
+// --------------------
+// Businesses Store
+// --------------------
+const initialBusinesses = loadFromStorage<Business[]>("businesses", []);
+export const businesses = writable<Business[]>(initialBusinesses);
 
-// --- 2. Fix the Subscriptions ---
-// We only want to subscribe (and save to LocalStorage) when running in the browser.
 if (browser) {
-    services.subscribe(s => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        services: s,
-        appointments: initialData.appointments // Using initialData for structure
-      }));
-    });
+  businesses.subscribe((value) => {
+    saveToStorage("businesses", value);
+  });
+}
 
-    appointments.subscribe(a => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        services: initialData.services, // Using initialData for structure
-        appointments: a
-      }));
-    });
+// --------------------
+// Bookings Store
+// --------------------
+const initialBookings = loadFromStorage<Booking[]>("bookings", []);
+export const bookings = writable<Booking[]>(initialBookings);
+
+if (browser) {
+  bookings.subscribe((value) => {
+    saveToStorage("bookings", value);
+  });
+}
+
+// --------------------
+// Actions (Fake API)
+// --------------------
+export function addBusiness(business: Business) {
+  businesses.update((all) => [...all, business]);
+}
+
+export function addBooking(booking: Booking) {
+  bookings.update((all) => [...all, booking]);
+}
+
+export function getBookingsByBusiness(businessId: string): Booking[] {
+  let result: Booking[] = [];
+
+  bookings.subscribe((all) => {
+    result = all.filter((b) => b.businessId === businessId);
+  })();
+
+  return result;
 }
