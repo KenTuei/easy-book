@@ -13,11 +13,13 @@
   let businessList: Business[] = [];
   businesses.subscribe((b) => (businessList = b));
 
+  // Open booking modal
   function openBooking(business: Business) {
     selectedBusiness = business;
     showModal = true;
   }
 
+  // Close modal
   function closeModal() {
     showModal = false;
     selectedBusiness = null;
@@ -40,7 +42,9 @@
 
 {#if showModal && selectedBusiness}
   <BookingModal
-    {selectedBusiness}
+    open={showModal}
+    businessId={selectedBusiness.id}
+    businessName={selectedBusiness.name}
     on:close={closeModal}
   />
 {/if}

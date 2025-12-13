@@ -3,15 +3,13 @@
   import type { Business, Booking } from "$lib/types";
   import ClientCalendar from "$lib/components/ClientCalendar.svelte";
 
-  import { derived } from "svelte/store";
-
-  // Reactive selected business ID
+  // Selected business ID for dropdown
   let selectedBusinessId = "";
 
-  // Automatically update current business based on selection
+  // Reactive: current business based on selection
   $: currentBusiness = $businesses.find(b => b.id === selectedBusinessId) || $businesses[0] || null;
 
-  // Automatically update bookings for the current business
+  // Reactive: bookings for the current business
   $: businessBookings = currentBusiness
     ? $bookings.filter(b => b.businessId === currentBusiness.id)
     : [];
@@ -23,7 +21,7 @@
   {#if $businesses.length === 0}
     <p>No businesses registered yet. Please onboard first.</p>
   {:else}
-    <!-- Select current business -->
+    <!-- Select business -->
     <div class="mb-6">
       <label class="block mb-2 font-medium">Select Business:</label>
       <select
