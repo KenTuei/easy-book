@@ -1,22 +1,24 @@
 <script lang="ts">
-	import { FullCalendar } from 'fullcalendar-svelte'; 
-    import type { FullCalendarOptions } from 'fullcalendar-svelte';
+  import FullCalendar from "svelte-fullcalendar";
+  import dayGridPlugin from "@fullcalendar/daygrid";
+  import interactionPlugin from "@fullcalendar/interaction";
+  import type { Booking } from "$lib/types";
 
-    let { 
-        options, 
-        calendarEvents,
-        calendarRef = null 
-    } = $props<{
-        options: FullCalendarOptions;
-        calendarEvents: any[];
-        calendarRef: any; 
-    }>();
+  export let businessBookings: Booking[] = [];
+
+  // Convert bookings to FullCalendar events
+  $: events = businessBookings.map((b) => ({
+    id: b.id,
+    title: `${b.clientName} - ${b.time}`,
+    start: `${b.date}T${b.time}:00`,
+  }));
 </script>
 
-<FullCalendar
-    {options}
-    events={calendarEvents}
-    bind:this={calendarRef} 
-    
-    class="h-[350px] overflow-y-auto"
-/>
+<div class="border rounded-lg p-4 shadow">
+  <FullCalendar
+    plugins={[dayGridPlugin, interactionPlugin]}
+    initialView="dayGridMonth"
+    events={events}
+    height="auto"
+  />
+</div>
