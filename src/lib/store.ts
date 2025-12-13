@@ -1,4 +1,3 @@
-// src/lib/store.ts
 import { writable } from "svelte/store";
 import { browser } from "$app/environment";
 import type { Business, Booking } from "./types";
@@ -26,34 +25,35 @@ function saveToStorage<T>(key: string, value: T) {
 }
 
 // --------------------
-// Businesses Store
+// Stores
 // --------------------
+export const currentUser = writable<string>(""); // username/email
+
 const initialBusinesses = loadFromStorage<Business[]>("businesses", []);
 export const businesses = writable<Business[]>(initialBusinesses);
 
-if (browser) {
-  businesses.subscribe((value) => {
-    saveToStorage("businesses", value);
-  });
-}
-
-// --------------------
-// Bookings Store
-// --------------------
 const initialBookings = loadFromStorage<Booking[]>("bookings", []);
 export const bookings = writable<Booking[]>(initialBookings);
 
 if (browser) {
-  bookings.subscribe((value) => {
-    saveToStorage("bookings", value);
-  });
+  businesses.subscribe((value) => saveToStorage("businesses", value));
+  bookings.subscribe((value) => saveToStorage("bookings", value));
+  currentUser.subscribe((value) => saveToStorage("currentUser", value));
 }
 
 // --------------------
-// Actions (Fake API)
+// Actions
 // --------------------
-export function addBusiness(business: Business) {
-  businesses.update((all) => [...all, business]);
+export function addBusiness(business: Omit<Business, "owner">) {
+  let owner = "";
+  currentUser.subscribe((user) => (owner = user))(); // get current user
+
+  const businessWithOwner: Business = {
+    ...business,
+    owner,
+  };
+
+  businesses.update((all) => [...all, businessWithOwner]);
 }
 
 export function addBooking(booking: Booking) {
@@ -62,10 +62,8 @@ export function addBooking(booking: Booking) {
 
 export function getBookingsByBusiness(businessId: string): Booking[] {
   let result: Booking[] = [];
-
   bookings.subscribe((all) => {
     result = all.filter((b) => b.businessId === businessId);
   })();
-
   return result;
 }

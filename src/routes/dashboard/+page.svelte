@@ -1,15 +1,21 @@
 <script lang="ts">
-  import { businesses, bookings } from "$lib/store";
+  import { businesses, bookings, currentUser } from "$lib/store";
   import type { Business, Booking } from "$lib/types";
   import ClientCalendar from "$lib/components/ClientCalendar.svelte";
 
   // Selected business ID for dropdown
   let selectedBusinessId = "";
 
-  // Reactive: current business based on selection
-  $: currentBusiness = $businesses.find(b => b.id === selectedBusinessId) || $businesses[0] || null;
+  // Current logged-in user
+  $: loggedInUser = $currentUser;
 
-  // Reactive: bookings for the current business
+  // Filter businesses for the logged-in user
+  $: userBusinesses = $businesses.filter(b => b.ownerId === loggedInUser);
+
+  // Current business based on selection or default to first
+  $: currentBusiness = userBusinesses.find(b => b.id === selectedBusinessId) || userBusinesses[0] || null;
+
+  // Bookings for the current business
   $: businessBookings = currentBusiness
     ? $bookings.filter(b => b.businessId === currentBusiness.id)
     : [];
@@ -18,7 +24,9 @@
 <div class="max-w-6xl mx-auto p-6">
   <h1 class="text-3xl font-bold mb-6">Business Dashboard</h1>
 
-  {#if $businesses.length === 0}
+  {#if !loggedInUser}
+    <p>Please <a href="/login" class="text-blue-600 underline">log in</a> first.</p>
+  {:else if userBusinesses.length === 0}
     <p>No businesses registered yet. Please onboard first.</p>
   {:else}
     <!-- Select business -->
@@ -28,7 +36,7 @@
         class="border rounded px-3 py-2"
         bind:value={selectedBusinessId}
       >
-        {#each $businesses as b}
+        {#each userBusinesses as b}
           <option value={b.id}>{b.name} ({b.type})</option>
         {/each}
       </select>

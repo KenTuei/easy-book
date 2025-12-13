@@ -25,3 +25,28 @@ export interface SchedulerData {
   services: Service[];
   appointments: Appointment[];
 }
+
+// 4. Business Definition
+export type BusinessType = "salon" | "spa" | "barber" | "gym" | "tutor";
+
+export interface Business {
+  id: string; 
+  name: string;
+  type: BusinessType;
+  location: string;
+  openingHours: {
+    start: string; // "08:00"
+    end: string;   // "18:00"
+  };
+  price: number;
+  ownerId: string; // <-- new field for ownership
+}
+
+// 5. Booking specific to a business
+export interface Booking {
+  id: string;
+  businessId: string;
+  clientName: string;
+  date: string; // "2025-01-10"
+  time: string; // "10:00"
+}

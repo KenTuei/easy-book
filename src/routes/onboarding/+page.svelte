@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { addBusiness } from "$lib/store";
+  import { addBusiness, currentUser } from "$lib/store";
   import { BUSINESS_TYPES, type BusinessType } from "$lib/types";
   import { goto } from "$app/navigation";
+  import { get } from "svelte/store";
 
   // Simple ID generator (no extra deps)
   function generateId() {
@@ -16,6 +17,12 @@
   let price = 1000;
 
   function submit() {
+    const loggedInUser = get(currentUser);
+    if (!loggedInUser) {
+      alert("You must be logged in to create a business");
+      return;
+    }
+
     if (!name || !location) {
       alert("Please fill all required fields");
       return;
@@ -30,7 +37,8 @@
         start: openingStart,
         end: openingEnd
       },
-      price
+      price,
+      ownerId: loggedInUser // <-- attach ownerId
     });
 
     // Redirect to dashboard after creation
@@ -41,10 +49,7 @@
 <div class="max-w-2xl mx-auto p-6">
   <h1 class="text-2xl font-bold mb-6">Create Your Business</h1>
 
-  <form
-    class="space-y-5"
-    on:submit|preventDefault={submit}
-  >
+  <form class="space-y-5" on:submit|preventDefault={submit}>
     <!-- Business Name -->
     <div>
       <label class="block text-sm font-medium mb-1">Business Name</label>
@@ -60,10 +65,7 @@
     <!-- Business Type -->
     <div>
       <label class="block text-sm font-medium mb-1">Business Type</label>
-      <select
-        class="w-full border rounded px-3 py-2"
-        bind:value={type}
-      >
+      <select class="w-full border rounded px-3 py-2" bind:value={type}>
         {#each BUSINESS_TYPES as bt}
           <option value={bt.value}>{bt.label}</option>
         {/each}
