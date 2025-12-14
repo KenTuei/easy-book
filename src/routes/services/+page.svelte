@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ServiceCard from '$lib/components/ServiceCard/ServiceCard.svelte';
+  import ServiceCard from '$lib/components/ui/ServiceCard/ServiceCard.svelte'
   import BookingModal from '$lib/components/BookingModal.svelte';
   import { onMount } from 'svelte';
   import type { Booking } from '$lib/utils/conflictChecker';

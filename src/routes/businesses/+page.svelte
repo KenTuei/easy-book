@@ -1,7 +1,7 @@
 <script lang="ts">
   import { businesses } from "$lib/store";
   import type { Business } from "$lib/types";
-  import ServiceCard from "$lib/components/ServiceCard/ServiceCard.svelte";
+  import ServiceCard from "$lib/components/ui/ServiceCard/ServiceCard.svelte";
   import BookingModal from "$lib/components/BookingModal.svelte";
 
   import { writable } from "svelte/store";

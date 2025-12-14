@@ -1,8 +1,6 @@
 <script lang="ts">
-  // Core FullCalendar library and Svelte wrapper
-  import FullCalendar from "svelte-fullcalendar"; 
-  
-  // Necessary Plugins 
+  import { onMount, onDestroy } from 'svelte';
+  import { Calendar } from '@fullcalendar/core';
   import dayGridPlugin from "@fullcalendar/daygrid";
   import timeGridPlugin from "@fullcalendar/timegrid";
   import interactionPlugin from "@fullcalendar/interaction";
@@ -10,19 +8,20 @@
   // Reactive variables for modal
   let showModal = false;
   let selectedEvent: any | null = null; 
+  let calendarEl: HTMLDivElement;
+  let calendar: Calendar | null = null;
 
   // Sample events 
-  // FIX: Added allDay: false to explicitly define these as timed events for timeGrid views.
   let events = [
     { 
-      id: 1, 
+      id: '1', 
       title: "Haircut", 
       start: "2025-12-15T10:00:00", 
       end: "2025-12-15T11:00:00", 
       allDay: false 
     },
     { 
-      id: 2, 
+      id: '2', 
       title: "Makeup Session", 
       start: "2025-12-16T14:00:00", 
       end: "2025-12-16T15:30:00", 
@@ -36,7 +35,7 @@
     showModal = true;
   }
 
-  // Handle date click (used for creating new events, for example)
+  // Handle date click
   function handleDateClick(info: any) {
     console.log(`Date clicked: ${info.dateStr}`);
     alert(`Date clicked: ${info.dateStr}. You could open a new booking form here.`);
@@ -49,38 +48,47 @@
 
   // Handle keyboard events for modal backdrop
   function handleBackdropKeydown(e: KeyboardEvent) {
-    // Handle Escape, Enter, or Space keys to dismiss the modal
     if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       showModal = false;
     }
   }
+
+  onMount(() => {
+    calendar = new Calendar(calendarEl, {
+      plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+      initialView: 'timeGridWeek',
+      editable: true,
+      selectable: true,
+      events,
+      eventClick: handleEventClick,
+      dateClick: handleDateClick,
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      },
+      buttonText: {
+        today: 'TODAY',
+        month: 'MONTH',
+        week: 'WEEK',
+        day: 'DAY'
+      },
+      height: 'auto'
+    });
+
+    calendar.render();
+  });
+
+  onDestroy(() => {
+    if (calendar) {
+      calendar.destroy();
+    }
+  });
 </script>
 
 <div class="calendar-container">
-  <FullCalendar
-    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-    initialView="timeGridWeek"
-    editable={true}
-    selectable={true}
-    events={events}
-    
-    on:eventClick={handleEventClick}
-    on:dateClick={handleDateClick}
-    
-    headerToolbar={{
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    }}
-    buttonText={{
-      today: 'TODAY',
-      month: 'MONTH',
-      week: 'WEEK',
-      day: 'DAY'
-    }}
-    height="auto"
-  />
+  <div bind:this={calendarEl}></div>
 </div>
 
 {#if showModal && selectedEvent}
@@ -109,9 +117,6 @@
 {/if}
 
 <style>
-  /* 🎨 FIX: Use :global() to target elements rendered by the external FullCalendar library,
-     resolving the "Unused CSS selector" warnings and applying your hover effect. */
-  
   /* Zoom effect on event cards */
   :global(.fc-event) {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -143,7 +148,7 @@
     margin: 0 auto;
   }
 
-  /* Modal styles (internal styles are fine without :global()) */
+  /* Modal styles */
   .modal-backdrop {
     position: fixed;
     inset: 0;

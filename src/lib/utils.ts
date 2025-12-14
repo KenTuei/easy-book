@@ -1,46 +1,14 @@
-// src/lib/types.ts
+import { twMerge } from 'tailwind-merge';
+import { clsx, type ClassValue } from 'clsx';
 
-// --------------------
-// Business Types
-// --------------------
-export type BusinessType =
-  | "salon"
-  | "spa"
-  | "barber"
-  | "gym"
-  | "tutor";
-
-// For UI dropdowns / selects
-export const BUSINESS_TYPES: { label: string; value: BusinessType }[] = [
-  { label: "Salon", value: "salon" },
-  { label: "Spa", value: "spa" },
-  { label: "Barber Shop", value: "barber" },
-  { label: "Gym", value: "gym" },
-  { label: "Tutor", value: "tutor" }
-];
-
-// --------------------
-// Business Model
-// --------------------
-export type Business = {
-  id: string;
-  name: string;
-  type: BusinessType;
-  location: string;
-  openingHours: {
-    start: string; // e.g. "08:00"
-    end: string;   // e.g. "18:00"
-  };
-  price: number; // base price (KES)
-};
-
-// --------------------
-// Booking Model
-// --------------------
-export type Booking = {
-  id: string;
-  businessId: string;
-  clientName: string;
-  date: string; // e.g. "2025-01-10"
-  time: string; // e.g. "10:00"
-};
+/**
+ * Combines and merges class names.
+ * This is the standard utility function ('cn') used in shadcn-svelte
+ * for managing Tailwind CSS classes, ensuring that conflicting classes
+ * (like two different colors) are correctly overridden.
+ * * @param inputs - An array of class names (strings or arrays of strings).
+ * @returns A single, merged string of class names.
+ */
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
