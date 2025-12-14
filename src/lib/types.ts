@@ -38,7 +38,6 @@ export interface SchedulerData {
   appointments: Appointment[];
 }
 
-
 // ----------------------------------------------------
 // 2. Business Models
 // ----------------------------------------------------
@@ -71,3 +70,33 @@ export const BUSINESS_TYPES: { label: string; value: BusinessType }[] = [
   { label: "Gym", value: "gym" },
   { label: "Tutor", value: "tutor" }
 ];
+
+// ----------------------------------------------------
+// 3. User & Authentication Models
+// ----------------------------------------------------
+
+/**
+ * User account with role-based access
+ */
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'user' | 'business_owner'; // user = can only book, business_owner = can list businesses
+}
+
+// ----------------------------------------------------
+// 4. Legacy Booking Model (for compatibility)
+// ----------------------------------------------------
+
+/**
+ * @deprecated Use Appointment instead. Kept for backward compatibility.
+ */
+export interface Booking {
+  id: string;
+  businessId: string;
+  clientName: string;
+  date: string;
+  time: string;
+  price?: number;
+}

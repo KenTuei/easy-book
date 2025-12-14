@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Business } from "$lib/types";
   import { createEventDispatcher } from "svelte";
-  import { Badge } from "$lib/components/ui/badge/badge.svelte";
+  import { Badge } from "$lib/components/ui/badge";
 
   export let business: Business;
 
@@ -20,7 +20,7 @@
 <div class="border rounded-lg p-4 shadow hover:shadow-lg transition">
   <h2 class="text-xl font-semibold mb-2">{business.name}</h2>
   <div class="flex items-center gap-2 mb-2">
-    <Badge label={business.type} variant="success" />
+    <Badge>{business.type}</Badge>
     <p class="text-sm text-gray-600 mb-0">KES {business.price}</p>
   </div>
   <p class="text-sm text-gray-600 mb-1">Location: {business.location}</p>

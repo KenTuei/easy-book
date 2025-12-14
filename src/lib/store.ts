@@ -1,86 +1,139 @@
 // src/lib/store.ts
 
-import { writable } from "svelte/store";
+import { writable, derived } from "svelte/store";
 import { browser } from "$app/environment";
-// 💡 IMPORTANT: Import 'Appointment' and 'Service' to match the updated types.ts
-import type { Business, Appointment, Service } from "./types";
+import type { Business, Appointment, Service, User } from "./types";
 
 // --------------------
 // Helpers for Local Storage Persistence
 // --------------------
 function loadFromStorage<T>(key: string, fallback: T): T {
-  if (!browser) return fallback;
+  if (!browser) return fallback;
 
-  const stored = localStorage.getItem(key);
-  if (!stored) return fallback;
+  const stored = localStorage.getItem(key);
+  if (!stored) return fallback;
 
-  try {
-    return JSON.parse(stored) as T;
-  } catch (err) {
-    console.error(`Failed to parse ${key}`, err);
-    return fallback;
-  }
+  try {
+    return JSON.parse(stored) as T;
+  } catch (err) {
+    console.error(`Failed to parse ${key}`, err);
+    return fallback;
+  }
 }
 
 function saveToStorage<T>(key: string, value: T) {
-  if (!browser) return;
-  localStorage.setItem(key, JSON.stringify(value));
+  if (!browser) return;
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
 // --------------------
-// Stores (Public Exports)
+// Authentication Stores
 // --------------------
-export const currentUser = writable<string>(""); // username/email
+const initialUser = loadFromStorage<User | null>("currentUser", null);
+export const currentUser = writable<User | null>(initialUser);
 
+// Derived stores for authentication state
+export const isAuthenticated = derived(
+  currentUser,
+  $currentUser => $currentUser !== null
+);
+
+export const isBusinessOwner = derived(
+  currentUser,
+  $currentUser => $currentUser?.role === 'business_owner'
+);
+
+// --------------------
+// Data Stores
+// --------------------
 const initialBusinesses = loadFromStorage<Business[]>("businesses", []);
 export const businesses = writable<Business[]>(initialBusinesses);
 
-// 💡 FIX: Renamed store from 'bookings' to 'appointments' to match the component import and type.
 const initialAppointments = loadFromStorage<Appointment[]>("appointments", []);
 export const appointments = writable<Appointment[]>(initialAppointments);
 
-// 💡 NEW: Add a store for Services (used by the conflict checker and UI)
 const initialServices = loadFromStorage<Service[]>("services", []);
 export const services = writable<Service[]>(initialServices);
 
+// Legacy booking store for backward compatibility
+export const bookings = writable<any[]>([]);
 
 // --------------------
 // Persistence Subscriptions
 // --------------------
 if (browser) {
-  businesses.subscribe((value) => saveToStorage("businesses", value));
-  // 💡 FIX: Subscribing to the 'appointments' store and saving under the 'appointments' key.
-  appointments.subscribe((value) => saveToStorage("appointments", value));
-  services.subscribe((value) => saveToStorage("services", value));
-  currentUser.subscribe((value) => saveToStorage("currentUser", value));
+  currentUser.subscribe((value) => saveToStorage("currentUser", value));
+  businesses.subscribe((value) => saveToStorage("businesses", value));
+  appointments.subscribe((value) => saveToStorage("appointments", value));
+  services.subscribe((value) => saveToStorage("services", value));
 }
 
 // --------------------
-// Actions
+// Authentication Actions
 // --------------------
-// NOTE: I'm assuming 'Business' now has the 'ownerId' field, not 'owner'
+export function login(user: User) {
+  currentUser.set(user);
+}
+
+export function logout() {
+  currentUser.set(null);
+}
+
+export function initAuth() {
+  // Auth is already initialized via loadFromStorage
+  // This function exists for explicit initialization calls
+}
+
+// --------------------
+// Business Actions
+// --------------------
 export function addBusiness(business: Omit<Business, "ownerId">) {
-  let ownerId = "";
-  currentUser.subscribe((user) => (ownerId = user))();
+  let ownerId = "";
+  const unsubscribe = currentUser.subscribe((user) => {
+    ownerId = user?.id || "";
+  });
+  unsubscribe();
 
-  const businessWithOwner: Business = {
-    ...business,
-    ownerId, // Use ownerId to match the updated type
-  };
+  if (!ownerId) {
+    console.error("Cannot add business: No user logged in");
+    return;
+  }
 
-  businesses.update((all) => [...all, businessWithOwner]);
+  const businessWithOwner: Business = {
+    ...business,
+    ownerId,
+  };
+
+  businesses.update((all) => [...all, businessWithOwner]);
 }
 
-// 💡 FIX: Updated the function name and type from 'addBooking' to 'addAppointment'
+// --------------------
+// Appointment Actions
+// --------------------
 export function addAppointment(appointment: Appointment) {
-  appointments.update((all) => [...all, appointment]);
+  appointments.update((all) => [...all, appointment]);
 }
 
-// 💡 FIX: Updated the function name and type from 'getBookingsByBusiness' to 'getAppointmentsByBusiness'
 export function getAppointmentsByBusiness(businessId: string): Appointment[] {
-  let result: Appointment[] = [];
-  appointments.subscribe((all) => {
-    result = all.filter((a) => a.businessId === businessId);
-  })();
-  return result;
+  let result: Appointment[] = [];
+  const unsubscribe = appointments.subscribe((all) => {
+    result = all.filter((a) => a.businessId === businessId);
+  });
+  unsubscribe();
+  return result;
+}
+
+export function removeAppointment(id: string) {
+  appointments.update((all) => all.filter(a => a.id !== id));
+}
+
+// --------------------
+// Legacy Booking Actions (for backward compatibility)
+// --------------------
+export function addBooking(booking: any) {
+  bookings.update(b => [...b, booking]);
+}
+
+export function removeBooking(id: string) {
+  bookings.update(b => b.filter(booking => booking.id !== id));
 }

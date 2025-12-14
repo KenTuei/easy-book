@@ -1,10 +1,16 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { page } from '$app/stores';
+	import { currentUser, isBusinessOwner, logout } from '$lib/store';
 	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge';
 
 	let { children } = $props();
+
+	function handleLogout() {
+		logout();
+		window.location.href = '/';
+	}
 </script>
 
 <svelte:head>
@@ -24,9 +30,34 @@
 					<a href="/" class="text-gray-700 hover:text-purple-600 transition-colors">Home</a>
 					<a href="/services" class="text-gray-700 hover:text-purple-600 transition-colors">Services</a>
 					<a href="/businesses" class="text-gray-700 hover:text-purple-600 transition-colors">Businesses</a>
-					<a href="/dashboard" class="text-gray-700 hover:text-purple-600 transition-colors">Dashboard</a>
-					<Button href="/login" variant="outline" size="sm">Login</Button>
-					<Button href="/onboarding" size="sm">List Your Business</Button>
+					
+					{#if $currentUser}
+						<!-- Show dashboard only for business owners -->
+						{#if $isBusinessOwner}
+							<a href="/dashboard" class="text-gray-700 hover:text-purple-600 transition-colors">Dashboard</a>
+						{/if}
+
+						<!-- User info and logout -->
+						<div class="flex items-center gap-2">
+							<Badge variant="outline">
+								{$currentUser.name}
+								{#if $isBusinessOwner}
+									<span class="ml-1 text-xs">(Owner)</span>
+								{/if}
+							</Badge>
+							<Button variant="outline" size="sm" on:click={handleLogout}>Logout</Button>
+						</div>
+
+						<!-- List Your Business - only for business owners -->
+						{#if $isBusinessOwner}
+							<Button href="/onboarding" size="sm" class="bg-gradient-to-r from-purple-500 to-blue-500">
+								+ List Business
+							</Button>
+						{/if}
+					{:else}
+						<!-- Not logged in -->
+						<Button href="/login" variant="outline" size="sm">Login</Button>
+					{/if}
 				</div>
 			</div>
 		</div>
